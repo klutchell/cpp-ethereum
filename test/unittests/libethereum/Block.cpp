@@ -261,4 +261,59 @@ BOOST_AUTO_TEST_CASE(bGetReceiptOverflow)
 	BOOST_CHECK_THROW(block.receipt(123), std::out_of_range);
 }
 
+class MetropolisTransitionTestFixture: public TestOutputHelper
+{
+public:
+	MetropolisTransitionTestFixture()
+	{
+		TestBlock testBlock;
+		// block 1 - before Metropolis
+		testBlock.mine(testBlockchain);
+		testBlockchain.addBlock(testBlock);
+		block1hash = blockchain.currentHash();
+
+		// block 2 - first Metropolis block
+		testBlock.mine(testBlockchain);
+		testBlockchain.addBlock(testBlock);
+		block2hash = blockchain.currentHash();
+	}
+
+	NetworkSelector networkSelector{Network::MetropolisTransitionTest};
+	TestBlockChain testBlockchain{TestBlockChain::defaultGenesisBlock()};
+	TestBlock const& genesisBlock{testBlockchain.testGenesis()};
+	OverlayDB const& genesisDB{genesisBlock.state().db()};
+	BlockChain const& blockchain{testBlockchain.interface()};
+
+	h256 block1hash;
+	h256 block2hash;
+};
+
+BOOST_FIXTURE_TEST_SUITE(MetropolisBlockSuite, MetropolisTransitionTestFixture)
+
+BOOST_AUTO_TEST_CASE(bBlockhashContractIsCreated)
+{
+	Block block = blockchain.genesisBlock(genesisDB);
+	BOOST_CHECK(!block.state().addressHasCode(Address(0xf0)));
+
+	block.sync(blockchain);
+	BOOST_REQUIRE(block.state().addressHasCode(Address(0xf0)));
+}
+
+BOOST_AUTO_TEST_CASE(bBlockhashContractIsUpdated)
+{
+	Block block = blockchain.genesisBlock(genesisDB);
+	block.sync(blockchain, block1hash); // sync to the beginning of block 2
+
+	h256 storageRoot2 = block.state().storageRoot(Address(0xf0));
+	BOOST_CHECK(storageRoot2 != EmptyTrie);
+
+	block.sync(blockchain); // sync to the beginning of block 3
+	h256 storageRoot3 = block.state().storageRoot(Address(0xf0));
+	BOOST_CHECK(storageRoot3 != EmptyTrie);
+	
+	BOOST_REQUIRE(storageRoot2 != storageRoot3);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 BOOST_AUTO_TEST_SUITE_END()
