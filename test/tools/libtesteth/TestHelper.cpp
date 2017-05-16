@@ -453,7 +453,8 @@ void executeTests(const string& _name, const string& _testPathAppendix, const st
 	{
 		try
 		{
-			cnote << "Populating tests...";
+			if (!Options::get().singleTest)
+				cnote << "Populating tests...";
 			json_spirit::mValue v;
 			boost::filesystem::path p(__FILE__);
 
@@ -477,7 +478,8 @@ void executeTests(const string& _name, const string& _testPathAppendix, const st
 	}
 	try
 	{
-		cnote << "TEST " << name << ":";
+		if (!Options::get().singleTest)
+			cnote << "TEST " << name << ":";
 		json_spirit::mValue v;
 		string s = asString(dev::contents(testPath + "/" + name + ".json"));
 		BOOST_REQUIRE_MESSAGE(s.length() > 0, "Contents of " + testPath + "/" + name + ".json is empty. Have you cloned the 'tests' repo branch develop and set ETHEREUM_TEST_PATH to its path?");

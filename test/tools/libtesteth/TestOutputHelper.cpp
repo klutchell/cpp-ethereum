@@ -44,7 +44,8 @@ void TestOutputHelper::initTest(int _maxTests)
 	NoProof::init();
 	m_timer.restart();
 	m_currentTestCaseName = boost::unit_test::framework::current_test_case().p_name;
-	std::cout << "Test Case \"" + m_currentTestCaseName + "\": " << std::endl;
+	if (!Options::get().singleTest)
+		std::cout << "Test Case \"" + m_currentTestCaseName + "\": " << std::endl;
 	m_maxTests = _maxTests;
 	m_currTest = 0;
 }
@@ -56,7 +57,8 @@ void TestOutputHelper::initTest(json_spirit::mValue& _v)
 	NoProof::init();
 	m_timer.restart();
 	m_currentTestCaseName = boost::unit_test::framework::current_test_case().p_name;
-	std::cout << "Test Case \"" + m_currentTestCaseName + "\": " << std::endl;
+	if (!Options::get().singleTest)
+		std::cout << "Test Case \"" + m_currentTestCaseName + "\": " << std::endl;
 	m_maxTests = _v.get_obj().size();
 	m_currTest = 0;
 }
